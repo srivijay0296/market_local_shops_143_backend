@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: market-local-shops-backend
+  profiles:
+    active: dev
