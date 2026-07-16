@@ -1,3 +1,6 @@
+server:
+  port: 8082
+
 spring:
   autoconfigure:
     exclude:
@@ -5,8 +8,8 @@ spring:
       - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
   datasource:
     url: jdbc:h2:mem:market_local_shops;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
-    username: sa
-    password: password
+    username: srivijay95
+    password: Sownd143@
     driver-class-name: org.h2.Driver
   h2:
     console:
