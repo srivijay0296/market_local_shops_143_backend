@@ -50,6 +50,22 @@ public class DataInitializer implements CommandLineRunner {
             admin.setRole(Role.ADMIN);
             userRepository.save(admin);
 
+            // User with Sownd143@
+            User srivi1 = new User();
+            srivi1.setUsername("srivijay95");
+            srivi1.setEmail("srivijay0296@gmail.com");
+            srivi1.setPassword(passwordEncoder.encode("Sownd143@"));
+            srivi1.setRole(Role.ADMIN);
+            userRepository.save(srivi1);
+
+            // User with Sownd143
+            User srivi2 = new User();
+            srivi2.setUsername("srivi");
+            srivi2.setEmail("srivi@gmail.com");
+            srivi2.setPassword(passwordEncoder.encode("Sownd143"));
+            srivi2.setRole(Role.ADMIN);
+            userRepository.save(srivi2);
+
             // 2. Create Categories
             Category groceries = categoryRepository.save(new Category(null, "groceries"));
             Category electronics = categoryRepository.save(new Category(null, "electronics"));
