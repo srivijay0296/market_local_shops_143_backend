@@ -2,4 +2,4 @@ spring:
   application:
     name: market-local-shops-backend
   profiles:
-    active: supabase
+    active: dev
