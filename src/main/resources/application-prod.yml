@@ -16,12 +16,12 @@ spring:
     baseline-on-migrate: true
 
 jwt:
-  secret: ${JWT_SECRET}
+  secret: ${JWT_SECRET:21d2d886-c79b-41b1-a5c1-4a25969c7e9f}
   expiration: 86400000
   refresh-expiration: 604800000
 
 cors:
-  allowed-origins: ${CORS_ORIGINS}
+  allowed-origins: ${CORS_ORIGINS:http://localhost:5173,http://localhost:3000}
 
 management:
   endpoints:
