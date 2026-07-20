@@ -2,7 +2,6 @@ package com.marketlocalshops.producer;
 
 import com.marketlocalshops.config.rabbitmq.RabbitMQConfig;
 import com.marketlocalshops.events.dto.AuthEvent;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;

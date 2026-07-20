@@ -27,6 +27,15 @@ public class Market {
     @Column(nullable = false)
     private String status;
 
+    @Column(unique = true)
+    private String slug;
+
+    private String description;
+
+    @Column(name = "image_url")
+    @com.fasterxml.jackson.annotation.JsonProperty("image_url")
+    private String imageUrl;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
@@ -37,6 +46,9 @@ public class Market {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
+        if (status == null) {
+            status = "active";
+        }
     }
 
     @PreUpdate

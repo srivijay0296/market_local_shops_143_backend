@@ -18,6 +18,7 @@ public class ApplicationConfig {
     private final CustomUserDetailsService userDetailsService;
 
     @Bean
+    @SuppressWarnings("deprecation")
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         authProvider.setUserDetailsService(userDetailsService);

@@ -31,6 +31,26 @@ public class Order {
     @Column(nullable = false)
     private String status;
 
+    @Column(name = "shipping_address")
+    @com.fasterxml.jackson.annotation.JsonProperty("shipping_address")
+    private String shippingAddress;
+
+    @Column(name = "customer_name")
+    @com.fasterxml.jackson.annotation.JsonProperty("customer_name")
+    private String customerName;
+
+    @Column(name = "customer_phone")
+    @com.fasterxml.jackson.annotation.JsonProperty("customer_phone")
+    private String customerPhone;
+
+    @Column(name = "customer_email")
+    @com.fasterxml.jackson.annotation.JsonProperty("customer_email")
+    private String customerEmail;
+
+    @Transient
+    @com.fasterxml.jackson.annotation.JsonProperty("user_id")
+    private Long userId;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     @com.fasterxml.jackson.annotation.JsonManagedReference
     private List<OrderItem> items;
@@ -40,6 +60,7 @@ public class Order {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
 
     @PrePersist
     protected void onCreate() {

@@ -1,7 +1,6 @@
 package com.marketlocalshops.producer.kafka;
 
 import com.marketlocalshops.events.dto.BaseEvent;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -11,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 @Slf4j
 public class KafkaEventProducer {
 
+    @SuppressWarnings("unused")
     private final KafkaTemplate<String, BaseEvent> kafkaTemplate;
 
     public KafkaEventProducer(@Autowired(required = false) KafkaTemplate<String, BaseEvent> kafkaTemplate) {

@@ -33,10 +33,20 @@ public class User {
     @Column(nullable = false)
     private Role role;
 
+    private String name;
+    private String phone;
+    private String address;
+
+    @Column(name = "is_approved")
+    @com.fasterxml.jackson.annotation.JsonProperty("is_approved")
+    private Boolean isApproved = true;
+
     @Column(name = "created_at", updatable = false)
+    @com.fasterxml.jackson.annotation.JsonProperty("created_at")
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
+    @com.fasterxml.jackson.annotation.JsonProperty("updated_at")
     private LocalDateTime updatedAt;
 
     @PrePersist

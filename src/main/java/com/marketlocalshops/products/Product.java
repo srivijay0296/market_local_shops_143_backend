@@ -30,6 +30,32 @@ public class Product {
     @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Shop shop;
 
+    private String description;
+
+    private String category;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer stock = 10;
+
+    @Column(name = "image_url")
+    @com.fasterxml.jackson.annotation.JsonProperty("image_url")
+    private String imageUrl;
+
+    @Column(name = "is_approved", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonProperty("is_approved")
+    @Builder.Default
+    private Boolean isApproved = false;
+
+    @Column(name = "view_count", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonProperty("view_count")
+    @Builder.Default
+    private Integer viewCount = 0;
+
+    @Transient
+    @com.fasterxml.jackson.annotation.JsonProperty("shop_id")
+    private Long shopId;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
@@ -40,6 +66,9 @@ public class Product {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
+        if (stock == null) stock = 10;
+        if (isApproved == null) isApproved = false;
+        if (viewCount == null) viewCount = 0;
     }
 
     @PreUpdate

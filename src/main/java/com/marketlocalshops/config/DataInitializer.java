@@ -67,9 +67,9 @@ public class DataInitializer implements CommandLineRunner {
             userRepository.save(srivi2);
 
             // 2. Create Categories
-            Category groceries = categoryRepository.save(new Category(null, "groceries"));
-            Category electronics = categoryRepository.save(new Category(null, "electronics"));
-            Category clothing = categoryRepository.save(new Category(null, "clothing"));
+            categoryRepository.save(new Category(null, "groceries"));
+            categoryRepository.save(new Category(null, "electronics"));
+            categoryRepository.save(new Category(null, "clothing"));
             categoryRepository.save(new Category(null, "accessories"));
 
             // 3. Create Market
@@ -77,7 +77,10 @@ public class DataInitializer implements CommandLineRunner {
             market.setName("Kalignar Market");
             market.setLocation("Bargur");
             market.setStatus("active");
+            market.setSlug("kalignar-market");
+            market.setDescription("Central Hub of Bargur");
             marketRepository.save(market);
+
 
             // 4. Create Shop
             Shop shop = new Shop();

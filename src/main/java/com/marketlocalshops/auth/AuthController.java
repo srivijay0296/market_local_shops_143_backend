@@ -4,7 +4,6 @@ import com.marketlocalshops.roles.Role;
 import com.marketlocalshops.users.User;
 import com.marketlocalshops.users.UserRepository;
 import com.marketlocalshops.security.JwtUtils;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
-@RequiredArgsConstructor
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
@@ -27,8 +25,20 @@ public class AuthController {
     private final JwtUtils jwtUtils;
     private final UserDetailsService userDetailsService;
 
+    public AuthController(AuthenticationManager authenticationManager,
+                          UserRepository userRepository,
+                          PasswordEncoder passwordEncoder,
+                          JwtUtils jwtUtils,
+                          UserDetailsService userDetailsService) {
+        this.authenticationManager = authenticationManager;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtUtils = jwtUtils;
+        this.userDetailsService = userDetailsService;
+    }
+
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody AuthRequest request) {
+    public ResponseEntity<?> login(@jakarta.validation.Valid @RequestBody AuthRequest request) {
         try {
             String loginIdentifier = request.getEmail().trim().toLowerCase();
             
@@ -60,7 +70,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<?> register(@jakarta.validation.Valid @RequestBody RegisterRequest request) {
         try {
             String email = request.getEmail().trim().toLowerCase();
             if (userRepository.findByEmail(email).isPresent()) {
@@ -98,7 +108,7 @@ public class AuthController {
                     .build();
 
             userRepository.save(user);
-            return ResponseEntity.ok("User registered successfully");
+            return ResponseEntity.status(org.springframework.http.HttpStatus.CREATED).body("User registered successfully");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }

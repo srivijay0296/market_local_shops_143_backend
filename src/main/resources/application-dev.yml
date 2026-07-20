@@ -25,6 +25,11 @@ spring:
         dialect: org.hibernate.dialect.H2Dialect
   flyway:
     enabled: false
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
 
 jwt:
   secret: SR7QLe2Qp1xcGy6EtqPzdVQPkqf9wWBY

@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS banners (
+    id SERIAL PRIMARY KEY,
+    image_url TEXT NOT NULL,
+    active BOOLEAN DEFAULT TRUE,
+    sort_order INTEGER DEFAULT 0,
+    title VARCHAR(255),
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

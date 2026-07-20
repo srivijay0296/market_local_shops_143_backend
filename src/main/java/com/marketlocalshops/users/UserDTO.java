@@ -16,4 +16,14 @@ public class UserDTO {
     private String email;
     
     private String role;
+    
+    private String name;
+    private String phone;
+    private String address;
+    
+    @com.fasterxml.jackson.annotation.JsonProperty("is_approved")
+    private Boolean isApproved;
+    
+    @com.fasterxml.jackson.annotation.JsonProperty("created_at")
+    private java.time.LocalDateTime createdAt;
 }
