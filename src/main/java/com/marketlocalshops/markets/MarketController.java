@@ -27,43 +27,38 @@ public class MarketController {
             @RequestParam(name = "sort", defaultValue = "id,desc") String sort) {
         
         if (id != null) {
-            try {
-                return ResponseEntity.ok(marketService.getMarketById(id));
-            } catch (com.marketlocalshops.exception.ResourceNotFoundException e) {
-                return ResponseEntity.ok(null);
-            }
+            return ResponseEntity.ok(marketService.getMarketById(id));
         }
         if (slug != null) {
-            try {
-                return ResponseEntity.ok(marketService.getMarketBySlug(slug));
-            } catch (com.marketlocalshops.exception.ResourceNotFoundException e) {
-                return ResponseEntity.ok(null);
-            }
+            return ResponseEntity.ok(marketService.getMarketBySlug(slug));
         }
 
-        if (page != null && size != null) {
-            String[] sortParts = sort.split(",");
-            Sort.Direction direction = (sortParts.length > 1 && "asc".equalsIgnoreCase(sortParts[1])) 
-                    ? Sort.Direction.ASC 
-                    : Sort.Direction.DESC;
-            Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortParts[0]));
-            
-            return ResponseEntity.ok(marketService.findMarketsWithFilters(search, pageable));
+        int pageNum = (page != null && page >= 0) ? page : 0;
+        int pageSize = (size != null && size > 0) ? size : 20;
+        
+        String[] sortParts = (sort != null && !sort.isBlank()) ? sort.split(",") : new String[]{"id", "desc"};
+        Sort.Direction direction = (sortParts.length > 1 && "asc".equalsIgnoreCase(sortParts[1])) 
+                ? Sort.Direction.ASC 
+                : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(pageNum, pageSize, Sort.by(direction, sortParts[0]));
+
+        if (page == null && size == null) {
+            org.springframework.data.domain.Page<MarketDTO> marketPage = marketService.findMarketsWithFilters(search, pageable);
+            return ResponseEntity.ok(marketPage.getContent());
         }
 
-        // Backward compatibility fallback: return a simple List
-        return ResponseEntity.ok(marketService.findAll());
+        return ResponseEntity.ok(marketService.findMarketsWithFilters(search, pageable));
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<MarketDTO> createMarket(@RequestBody MarketDTO marketDTO) {
+    public ResponseEntity<MarketDTO> createMarket(@jakarta.validation.Valid @RequestBody MarketDTO marketDTO) {
         return ResponseEntity.status(org.springframework.http.HttpStatus.CREATED).body(marketService.createMarket(marketDTO));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<MarketDTO> updateMarket(@PathVariable Long id, @RequestBody MarketDTO updates) {
+    public ResponseEntity<MarketDTO> updateMarket(@PathVariable Long id, @jakarta.validation.Valid @RequestBody MarketDTO updates) {
         return ResponseEntity.ok(marketService.updateMarket(id, updates));
     }
 

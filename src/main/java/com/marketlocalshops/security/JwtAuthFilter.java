@@ -25,17 +25,20 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         final String authHeader = request.getHeader("Authorization");
-        final String jwt;
-        final String username;
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        jwt = authHeader.substring(7);
+        final String jwt = authHeader.substring(7).trim();
+        if (jwt.isEmpty()) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         try {
-            username = jwtUtils.extractUsername(jwt);
+            final String username = jwtUtils.extractUsername(jwt);
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
                 if (jwtUtils.validateToken(jwt, userDetails)) {
@@ -46,7 +49,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 }
             }
         } catch (Exception e) {
-            // Ignore signature exceptions for unauthenticated requests
+            // Ignore token parsing exceptions to allow SecurityEntryPoint to handle unauthorized requests properly
         }
 
         filterChain.doFilter(request, response);

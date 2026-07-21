@@ -16,7 +16,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ShopDTO {
     private Long id;
+    
+    @jakarta.validation.constraints.NotBlank(message = "Shop name is required")
     private String name;
+    
     private String description;
     
     private User owner;

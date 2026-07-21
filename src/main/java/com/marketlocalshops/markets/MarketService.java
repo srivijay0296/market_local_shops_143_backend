@@ -49,6 +49,23 @@ public class MarketService {
     @CacheEvict(value = "markets", allEntries = true)
     public MarketDTO createMarket(MarketDTO marketDTO) {
         Market market = marketMapper.toEntity(marketDTO);
+        
+        if (market.getStatus() == null || market.getStatus().isBlank()) {
+            market.setStatus("active");
+        }
+        
+        if (market.getSlug() == null || market.getSlug().isBlank()) {
+            String baseSlug = market.getName() != null 
+                    ? market.getName().toLowerCase().replaceAll("[^a-z0-9]+", "-").replaceAll("^-|-$", "")
+                    : "market";
+            String candidateSlug = baseSlug;
+            int count = 1;
+            while (marketRepository.findBySlug(candidateSlug).isPresent()) {
+                candidateSlug = baseSlug + "-" + count++;
+            }
+            market.setSlug(candidateSlug);
+        }
+        
         Market saved = marketRepository.save(market);
         return marketMapper.toDto(saved);
     }

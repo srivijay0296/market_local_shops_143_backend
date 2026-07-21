@@ -23,7 +23,6 @@ public class FileUploadController {
     }
 
     @PostMapping({"/api/files/upload", "/api/upload"})
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file) {
         if (file.isEmpty()) {
             Map<String, String> response = new HashMap<>();

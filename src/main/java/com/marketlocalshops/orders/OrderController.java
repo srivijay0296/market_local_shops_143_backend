@@ -1,5 +1,6 @@
 package com.marketlocalshops.orders;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -29,22 +30,21 @@ public class OrderController {
             @RequestParam(name = "size", required = false) Integer size,
             @RequestParam(name = "sort", defaultValue = "id,desc") String sort) {
         
-        if (page != null && size != null) {
-            String[] sortParts = sort.split(",");
-            Sort.Direction direction = (sortParts.length > 1 && "asc".equalsIgnoreCase(sortParts[1])) 
-                    ? Sort.Direction.ASC 
-                    : Sort.Direction.DESC;
-            Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortParts[0]));
-            
-            return ResponseEntity.ok(orderService.findOrdersWithFilters(userId, status, search, pageable));
+        int pageNum = (page != null && page >= 0) ? page : 0;
+        int pageSize = (size != null && size > 0) ? size : 20;
+        
+        String[] sortParts = (sort != null && !sort.isBlank()) ? sort.split(",") : new String[]{"id", "desc"};
+        Sort.Direction direction = (sortParts.length > 1 && "asc".equalsIgnoreCase(sortParts[1])) 
+                ? Sort.Direction.ASC 
+                : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(pageNum, pageSize, Sort.by(direction, sortParts[0]));
+
+        if (page == null && size == null) {
+            Page<OrderDTO> orderPage = orderService.findOrdersWithFilters(userId, status, search, pageable);
+            return ResponseEntity.ok(orderPage.getContent());
         }
 
-        // Backward compatibility fallback
-        if (userId != null) {
-            return ResponseEntity.ok(orderService.findByUserId(userId));
-        }
-        
-        return ResponseEntity.ok(orderService.findAll());
+        return ResponseEntity.ok(orderService.findOrdersWithFilters(userId, status, search, pageable));
     }
 
     @GetMapping("/{id}")
@@ -55,14 +55,32 @@ public class OrderController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('CUSTOMER', 'SELLER', 'ADMIN')")
-    public ResponseEntity<OrderDTO> createOrder(@RequestBody OrderDTO orderDTO) {
+    public ResponseEntity<OrderDTO> createOrder(@jakarta.validation.Valid @RequestBody OrderDTO orderDTO) {
         return ResponseEntity.status(org.springframework.http.HttpStatus.CREATED).body(orderService.createOrder(orderDTO));
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'SELLER', 'ADMIN')")
+    public ResponseEntity<OrderDTO> updateOrder(@PathVariable Long id, @jakarta.validation.Valid @RequestBody OrderDTO updates) {
+        return ResponseEntity.ok(orderService.updateOrder(id, updates));
     }
 
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasAnyRole('SELLER', 'ADMIN')")
     public ResponseEntity<OrderDTO> updateOrderStatus(@PathVariable Long id, @RequestBody Map<String, String> updates) {
         return ResponseEntity.ok(orderService.updateOrderStatus(id, updates));
+    }
+
+    @GetMapping("/user/{userId}")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'SELLER', 'ADMIN')")
+    public ResponseEntity<List<OrderDTO>> getOrdersByUser(@PathVariable Long userId) {
+        return ResponseEntity.ok(orderService.findByUserId(userId));
+    }
+
+    @GetMapping("/shop/{shopId}")
+    @PreAuthorize("hasAnyRole('SELLER', 'ADMIN')")
+    public ResponseEntity<List<OrderDTO>> getOrdersByShop(@PathVariable Long shopId) {
+        return ResponseEntity.ok(orderService.findByShopId(shopId));
     }
 
     @DeleteMapping("/{id}")

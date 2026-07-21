@@ -12,28 +12,31 @@ import java.util.List;
 @Repository
 public interface SellerPostRepository extends JpaRepository<SellerPost, Long> {
     List<SellerPost> findByShop_Id(Long shopId);
-    List<SellerPost> findByMediaType(String mediaType);
-    List<SellerPost> findByVideoUrlIsNotNull();
+    List<SellerPost> findByCategory(String category);
+    List<SellerPost> findByShop_IdAndCategory(Long shopId, String category);
 
     @Query(
-        value = "SELECT p FROM SellerPost p LEFT JOIN FETCH p.shop WHERE " +
-                "(:shopId IS NULL OR p.shop.id = :shopId) AND " +
-                "(:mediaType IS NULL OR LOWER(p.mediaType) = LOWER(:mediaType)) AND " +
+        value = "SELECT p FROM SellerPost p LEFT JOIN FETCH p.shop s WHERE " +
+                "(:shopId IS NULL OR (s IS NOT NULL AND s.id = :shopId)) AND " +
+                "(:mediaType IS NULL OR (p.mediaType IS NOT NULL AND LOWER(p.mediaType) = LOWER(:mediaType))) AND " +
+                "(:category IS NULL OR (p.category IS NOT NULL AND LOWER(p.category) = LOWER(:category))) AND " +
                 "(:hasVideo IS NULL OR (:hasVideo = true AND p.videoUrl IS NOT NULL) OR (:hasVideo = false AND p.videoUrl IS NULL)) AND " +
-                "(:status IS NULL OR LOWER(p.status) = LOWER(:status)) AND " +
-                "(:search IS NULL OR LOWER(p.title) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(p.description) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(p.location) LIKE LOWER(CONCAT('%', :search, '%')))",
-        countQuery = "SELECT COUNT(p) FROM SellerPost p WHERE " +
-                "(:shopId IS NULL OR p.shop.id = :shopId) AND " +
-                "(:mediaType IS NULL OR LOWER(p.mediaType) = LOWER(:mediaType)) AND " +
+                "(:status IS NULL OR (p.status IS NOT NULL AND LOWER(p.status) = LOWER(:status))) AND " +
+                "(:search IS NULL OR (p.title IS NOT NULL AND LOWER(p.title) LIKE LOWER(CONCAT('%', :search, '%'))) OR (p.description IS NOT NULL AND LOWER(p.description) LIKE LOWER(CONCAT('%', :search, '%'))) OR (p.location IS NOT NULL AND LOWER(p.location) LIKE LOWER(CONCAT('%', :search, '%'))))",
+        countQuery = "SELECT COUNT(p) FROM SellerPost p LEFT JOIN p.shop s WHERE " +
+                "(:shopId IS NULL OR (s IS NOT NULL AND s.id = :shopId)) AND " +
+                "(:mediaType IS NULL OR (p.mediaType IS NOT NULL AND LOWER(p.mediaType) = LOWER(:mediaType))) AND " +
+                "(:category IS NULL OR (p.category IS NOT NULL AND LOWER(p.category) = LOWER(:category))) AND " +
                 "(:hasVideo IS NULL OR (:hasVideo = true AND p.videoUrl IS NOT NULL) OR (:hasVideo = false AND p.videoUrl IS NULL)) AND " +
-                "(:status IS NULL OR LOWER(p.status) = LOWER(:status)) AND " +
-                "(:search IS NULL OR LOWER(p.title) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(p.description) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(p.location) LIKE LOWER(CONCAT('%', :search, '%')))"
+                "(:status IS NULL OR (p.status IS NOT NULL AND LOWER(p.status) = LOWER(:status))) AND " +
+                "(:search IS NULL OR (p.title IS NOT NULL AND LOWER(p.title) LIKE LOWER(CONCAT('%', :search, '%'))) OR (p.description IS NOT NULL AND LOWER(p.description) LIKE LOWER(CONCAT('%', :search, '%'))) OR (p.location IS NOT NULL AND LOWER(p.location) LIKE LOWER(CONCAT('%', :search, '%'))))"
     )
     Page<SellerPost> findPostsWithFilters(
             @Param("shopId") Long shopId,
             @Param("mediaType") String mediaType,
-            @Param("hasVideo") Boolean hasVideo,
+            @Param("category") String category,
             @Param("status") String status,
             @Param("search") String search,
+            @Param("hasVideo") Boolean hasVideo,
             Pageable pageable);
 }

@@ -22,21 +22,21 @@ public class SellerPostService {
     private final SellerPostMapper sellerPostMapper;
 
     @Transactional(readOnly = true)
-    public Page<SellerPostDTO> findPostsWithFilters(Long sellerId, String category, String search, Pageable pageable) {
-        return sellerPostRepository.findPostsWithFilters(sellerId, category, search, pageable)
+    public Page<SellerPostDTO> findPostsWithFilters(Long shopId, String mediaType, String category, String status, String search, Boolean hasVideo, Pageable pageable) {
+        return sellerPostRepository.findPostsWithFilters(shopId, mediaType, category, status, search, hasVideo, pageable)
                 .map(sellerPostMapper::toDto);
     }
 
     @Transactional(readOnly = true)
-    public List<SellerPostDTO> findByShopIdAndCategory(Long sellerId, String category) {
-        return sellerPostRepository.findByShop_IdAndCategory(sellerId, category).stream()
+    public List<SellerPostDTO> findByShopIdAndCategory(Long shopId, String category) {
+        return sellerPostRepository.findByShop_IdAndCategory(shopId, category).stream()
                 .map(sellerPostMapper::toDto)
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public List<SellerPostDTO> findByShopId(Long sellerId) {
-        return sellerPostRepository.findByShop_Id(sellerId).stream()
+    public List<SellerPostDTO> findByShopId(Long shopId) {
+        return sellerPostRepository.findByShop_Id(shopId).stream()
                 .map(sellerPostMapper::toDto)
                 .collect(Collectors.toList());
     }

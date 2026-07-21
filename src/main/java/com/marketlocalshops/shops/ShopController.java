@@ -2,6 +2,7 @@ package com.marketlocalshops.shops;
 
 import com.marketlocalshops.products.ProductDTO;
 import com.marketlocalshops.products.ProductService;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -32,25 +33,21 @@ public class ShopController {
             @RequestParam(name = "size", required = false) Integer size,
             @RequestParam(name = "sort", defaultValue = "id,desc") String sort) {
         
-        if (page != null && size != null) {
-            String[] sortParts = sort.split(",");
-            Sort.Direction direction = (sortParts.length > 1 && "asc".equalsIgnoreCase(sortParts[1])) 
-                    ? Sort.Direction.ASC 
-                    : Sort.Direction.DESC;
-            Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortParts[0]));
-            
-            return ResponseEntity.ok(shopService.findShopsWithFilters(marketId, status, search, pageable));
+        int pageNum = (page != null && page >= 0) ? page : 0;
+        int pageSize = (size != null && size > 0) ? size : 20;
+        
+        String[] sortParts = (sort != null && !sort.isBlank()) ? sort.split(",") : new String[]{"id", "desc"};
+        Sort.Direction direction = (sortParts.length > 1 && "asc".equalsIgnoreCase(sortParts[1])) 
+                ? Sort.Direction.ASC 
+                : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(pageNum, pageSize, Sort.by(direction, sortParts[0]));
+
+        if (page == null && size == null) {
+            Page<ShopDTO> shopPage = shopService.findShopsWithFilters(marketId, status, search, pageable);
+            return ResponseEntity.ok(shopPage.getContent());
         }
 
-        // Backward compatibility fallback: return a simple List
-        if (marketId != null && status != null) {
-            return ResponseEntity.ok(shopService.findByMarketIdAndStatus(marketId, status));
-        } else if (marketId != null) {
-            return ResponseEntity.ok(shopService.findByMarketId(marketId));
-        } else if (status != null) {
-            return ResponseEntity.ok(shopService.findByStatus(status));
-        }
-        return ResponseEntity.ok(shopService.findAll());
+        return ResponseEntity.ok(shopService.findShopsWithFilters(marketId, status, search, pageable));
     }
 
     @GetMapping("/{id}")
@@ -65,13 +62,13 @@ public class ShopController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('CUSTOMER', 'SELLER', 'ADMIN')")
-    public ResponseEntity<ShopDTO> createShop(@RequestBody ShopDTO shopDTO) {
+    public ResponseEntity<ShopDTO> createShop(@jakarta.validation.Valid @RequestBody ShopDTO shopDTO) {
         return ResponseEntity.status(org.springframework.http.HttpStatus.CREATED).body(shopService.createShop(shopDTO));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('SELLER')")
-    public ResponseEntity<ShopDTO> updateShop(@PathVariable Long id, @RequestBody ShopDTO updates) {
+    public ResponseEntity<ShopDTO> updateShop(@PathVariable Long id, @jakarta.validation.Valid @RequestBody ShopDTO updates) {
         return ResponseEntity.ok(shopService.updateShop(id, updates));
     }
 

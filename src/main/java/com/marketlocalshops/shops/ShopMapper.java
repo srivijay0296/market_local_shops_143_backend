@@ -46,10 +46,30 @@ public class ShopMapper {
         entity.setVendorName(dto.getVendorName());
         entity.setLocation(dto.getLocation());
         entity.setPhone(dto.getPhone());
-        entity.setOwnerId(dto.getOwnerId());
-        entity.setMarketId(dto.getMarketId());
+        entity.setOwnerId(dto.getOwnerId() != null ? dto.getOwnerId() : (dto.getOwner() != null ? dto.getOwner().getId() : null));
+        entity.setMarketId(dto.getMarketId() != null ? dto.getMarketId() : (dto.getMarket() != null ? dto.getMarket().getId() : null));
         entity.setCreatedAt(dto.getCreatedAt());
         entity.setUpdatedAt(dto.getUpdatedAt());
+
+        return entity;
+    }
+
+    public Shop toEntity(ShopRequest request) {
+        if (request == null) {
+            return null;
+        }
+
+        Shop entity = new Shop();
+        entity.setName(request.getName());
+        entity.setDescription(request.getDescription());
+        entity.setCategory(request.getCategory());
+        entity.setImageUrl(request.getImageUrl());
+        entity.setVendorName(request.getVendorName());
+        entity.setLocation(request.getLocation());
+        entity.setPhone(request.getPhone());
+        entity.setOwnerId(request.getOwnerId());
+        entity.setMarketId(request.getMarketId());
+        entity.setStatus("pending");
 
         return entity;
     }

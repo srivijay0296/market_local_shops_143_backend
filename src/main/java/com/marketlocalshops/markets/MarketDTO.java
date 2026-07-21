@@ -14,7 +14,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class MarketDTO {
     private Long id;
+    @jakarta.validation.constraints.NotBlank(message = "Market name is required")
     private String name;
+    
+    @jakarta.validation.constraints.NotBlank(message = "Location is required")
     private String location;
     private String status;
     private String slug;

@@ -13,15 +13,18 @@ import java.util.List;
 public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByUser_Id(Long userId);
 
+    @Query("SELECT DISTINCT o FROM Order o JOIN o.items i JOIN i.product p WHERE p.shop.id = :shopId")
+    List<Order> findByShop_Id(@Param("shopId") Long shopId);
+
     @Query(
-        value = "SELECT o FROM Order o LEFT JOIN FETCH o.user WHERE " +
-                "(:userId IS NULL OR o.user.id = :userId) AND " +
-                "(:status IS NULL OR LOWER(o.status) = LOWER(:status)) AND " +
-                "(:search IS NULL OR LOWER(o.customerName) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(o.customerEmail) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(o.shippingAddress) LIKE LOWER(CONCAT('%', :search, '%')))",
-        countQuery = "SELECT COUNT(o) FROM Order o WHERE " +
-                "(:userId IS NULL OR o.user.id = :userId) AND " +
-                "(:status IS NULL OR LOWER(o.status) = LOWER(:status)) AND " +
-                "(:search IS NULL OR LOWER(o.customerName) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(o.customerEmail) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(o.shippingAddress) LIKE LOWER(CONCAT('%', :search, '%')))"
+        value = "SELECT o FROM Order o LEFT JOIN FETCH o.user u WHERE " +
+                "(:userId IS NULL OR (u IS NOT NULL AND u.id = :userId)) AND " +
+                "(:status IS NULL OR (o.status IS NOT NULL AND LOWER(o.status) = LOWER(:status))) AND " +
+                "(:search IS NULL OR (o.customerName IS NOT NULL AND LOWER(o.customerName) LIKE LOWER(CONCAT('%', :search, '%'))) OR (o.customerEmail IS NOT NULL AND LOWER(o.customerEmail) LIKE LOWER(CONCAT('%', :search, '%'))) OR (o.shippingAddress IS NOT NULL AND LOWER(o.shippingAddress) LIKE LOWER(CONCAT('%', :search, '%'))))",
+        countQuery = "SELECT COUNT(o) FROM Order o LEFT JOIN o.user u WHERE " +
+                "(:userId IS NULL OR (u IS NOT NULL AND u.id = :userId)) AND " +
+                "(:status IS NULL OR (o.status IS NOT NULL AND LOWER(o.status) = LOWER(:status))) AND " +
+                "(:search IS NULL OR (o.customerName IS NOT NULL AND LOWER(o.customerName) LIKE LOWER(CONCAT('%', :search, '%'))) OR (o.customerEmail IS NOT NULL AND LOWER(o.customerEmail) LIKE LOWER(CONCAT('%', :search, '%'))) OR (o.shippingAddress IS NOT NULL AND LOWER(o.shippingAddress) LIKE LOWER(CONCAT('%', :search, '%'))))"
     )
     Page<Order> findOrdersWithFilters(
             @Param("userId") Long userId,

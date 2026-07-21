@@ -2,6 +2,7 @@ package com.marketlocalshops.auth;
 
 public class AuthResponse {
     private String token;
+    private String refreshToken;
     private String type = "Bearer";
     private Long id;
     private String username;
@@ -10,8 +11,19 @@ public class AuthResponse {
 
     public AuthResponse() {}
 
+    public AuthResponse(String token, String refreshToken, String type, Long id, String username, String email, String role) {
+        this.token = token;
+        this.refreshToken = refreshToken;
+        this.type = type;
+        this.id = id;
+        this.username = username;
+        this.email = email;
+        this.role = role;
+    }
+
     public AuthResponse(String token, String type, Long id, String username, String email, String role) {
         this.token = token;
+        this.refreshToken = null;
         this.type = type;
         this.id = id;
         this.username = username;
@@ -25,6 +37,14 @@ public class AuthResponse {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public String getRefreshToken() {
+        return refreshToken;
+    }
+
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
     }
 
     public String getType() {

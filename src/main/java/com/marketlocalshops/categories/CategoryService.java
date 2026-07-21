@@ -27,4 +27,23 @@ public class CategoryService {
         Category category = categoryMapper.toEntity(categoryDTO);
         return categoryMapper.toDto(categoryRepository.save(category));
     }
+
+    @Transactional
+    @CacheEvict(value = "categories", allEntries = true)
+    public CategoryDTO updateCategory(Long id, CategoryDTO updates) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new com.marketlocalshops.exception.ResourceNotFoundException("Category not found with id: " + id));
+        if (updates.getName() != null) category.setName(updates.getName());
+        if (updates.getSlug() != null) category.setSlug(updates.getSlug());
+        if (updates.getImageUrl() != null) category.setImageUrl(updates.getImageUrl());
+        return categoryMapper.toDto(categoryRepository.save(category));
+    }
+
+    @Transactional
+    @CacheEvict(value = "categories", allEntries = true)
+    public void deleteCategory(Long id) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new com.marketlocalshops.exception.ResourceNotFoundException("Category not found with id: " + id));
+        categoryRepository.delete(category);
+    }
 }

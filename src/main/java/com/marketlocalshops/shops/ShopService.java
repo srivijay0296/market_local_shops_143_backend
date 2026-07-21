@@ -70,21 +70,66 @@ public class ShopService {
     @CacheEvict(value = "shops", allEntries = true)
     public ShopDTO createShop(ShopDTO shopDTO) {
         Shop shop = shopMapper.toEntity(shopDTO);
+        resolveOwnerAndMarket(shop);
+        if (shop.getStatus() == null || shop.getStatus().isBlank()) {
+            shop.setStatus("approved");
+        }
         
-        if (shop.getOwnerId() != null) {
-            User owner = userRepository.findById(shop.getOwnerId()).orElse(null);
-            shop.setOwner(owner);
-        }
-        if (shop.getMarketId() != null) {
-            Market market = marketRepository.findById(shop.getMarketId()).orElse(null);
-            shop.setMarket(market);
-        }
-        if (shop.getStatus() == null) {
+        Shop saved = shopRepository.save(shop);
+        return shopMapper.toDto(saved);
+    }
+
+    @Transactional
+    @CacheEvict(value = "shops", allEntries = true)
+    public ShopDTO createShopRequest(ShopRequest request) {
+        Shop shop = shopMapper.toEntity(request);
+        resolveOwnerAndMarket(shop);
+        if (shop.getStatus() == null || shop.getStatus().isBlank()) {
             shop.setStatus("pending");
         }
         
         Shop saved = shopRepository.save(shop);
         return shopMapper.toDto(saved);
+    }
+
+    private void resolveOwnerAndMarket(Shop shop) {
+        Long ownerId = shop.getOwnerId();
+        if (ownerId == null && shop.getOwner() != null) {
+            ownerId = shop.getOwner().getId();
+        }
+
+        if (ownerId == null) {
+            try {
+                org.springframework.security.core.Authentication auth = 
+                        org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+                if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
+                    String username = auth.getName();
+                    User currentUser = userRepository.findByUsername(username)
+                            .or(() -> userRepository.findByEmail(username)).orElse(null);
+                    if (currentUser != null) {
+                        shop.setOwner(currentUser);
+                        shop.setOwnerId(currentUser.getId());
+                    }
+                }
+            } catch (Exception ignored) {}
+        } else {
+            Long targetId = ownerId;
+            User owner = userRepository.findById(targetId)
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + targetId));
+            shop.setOwner(owner);
+        }
+
+        Long marketId = shop.getMarketId();
+        if (marketId == null && shop.getMarket() != null) {
+            marketId = shop.getMarket().getId();
+        }
+
+        if (marketId != null) {
+            Long targetMarketId = marketId;
+            Market market = marketRepository.findById(targetMarketId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Market not found with id: " + targetMarketId));
+            shop.setMarket(market);
+        }
     }
 
     @Transactional

@@ -52,8 +52,8 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authenticationProvider(authenticationProvider)
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/h2-console/**", "/actuator/**", "/api/files/upload", "/api/upload", "/uploads/**").permitAll()
-                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/markets/**", "/api/products/**", "/api/shops/**", "/api/categories/**", "/api/seller_posts/**", "/api/post_comments/**", "/api/post_likes/**", "/api/post_saves/**", "/api/banners/**").permitAll()
+                .requestMatchers("/api/auth/**", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/actuator/**", "/api/files/upload", "/api/upload", "/uploads/**").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/markets/**", "/api/products/**", "/api/shops/**", "/api/shop_requests/**", "/api/categories/**", "/api/seller_posts/**", "/api/post_comments/**", "/api/post_likes/**", "/api/post_saves/**", "/api/banners/**").permitAll()
                 .anyRequest().authenticated()
             )
             .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
@@ -68,10 +68,10 @@ public class SecurityConfig {
         List<String> origins = Arrays.stream(allowedOrigins.split(","))
                 .map(String::trim)
                 .toList();
-        configuration.setAllowedOrigins(origins);
+        configuration.setAllowedOriginPatterns(List.of("*"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("authorization", "content-type", "x-auth-token"));
-        configuration.setExposedHeaders(List.of("x-auth-token"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setExposedHeaders(List.of("Authorization", "x-auth-token"));
         configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

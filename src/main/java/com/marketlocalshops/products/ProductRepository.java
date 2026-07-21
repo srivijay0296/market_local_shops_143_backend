@@ -22,18 +22,21 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Optional<Product> findById(Long id);
 
     @Query(
-        value = "SELECT p FROM Product p LEFT JOIN FETCH p.shop WHERE " +
-                "(:shopId IS NULL OR p.shop.id = :shopId) AND " +
-                "(:category IS NULL OR LOWER(p.category) = LOWER(:category)) AND " +
-                "(:search IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(p.description) LIKE LOWER(CONCAT('%', :search, '%')))",
-        countQuery = "SELECT COUNT(p) FROM Product p WHERE " +
-                "(:shopId IS NULL OR p.shop.id = :shopId) AND " +
-                "(:category IS NULL OR LOWER(p.category) = LOWER(:category)) AND " +
-                "(:search IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(p.description) LIKE LOWER(CONCAT('%', :search, '%')))"
+        value = "SELECT p FROM Product p LEFT JOIN FETCH p.shop s WHERE " +
+                "(:shopId IS NULL OR (s IS NOT NULL AND s.id = :shopId)) AND " +
+                "(:category IS NULL OR (p.category IS NOT NULL AND LOWER(p.category) = LOWER(:category))) AND " +
+                "(:isApproved IS NULL OR p.isApproved = :isApproved) AND " +
+                "(:search IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%')) OR (p.description IS NOT NULL AND LOWER(p.description) LIKE LOWER(CONCAT('%', :search, '%'))))",
+        countQuery = "SELECT COUNT(p) FROM Product p LEFT JOIN p.shop s WHERE " +
+                "(:shopId IS NULL OR (s IS NOT NULL AND s.id = :shopId)) AND " +
+                "(:category IS NULL OR (p.category IS NOT NULL AND LOWER(p.category) = LOWER(:category))) AND " +
+                "(:isApproved IS NULL OR p.isApproved = :isApproved) AND " +
+                "(:search IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%')) OR (p.description IS NOT NULL AND LOWER(p.description) LIKE LOWER(CONCAT('%', :search, '%'))))"
     )
     Page<Product> findProductsWithFilters(
             @Param("shopId") Long shopId,
             @Param("category") String category,
+            @Param("isApproved") Boolean isApproved,
             @Param("search") String search,
             Pageable pageable);
 }

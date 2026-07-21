@@ -7,14 +7,16 @@ spring:
       - org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
       - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
   datasource:
-    url: jdbc:h2:mem:market_local_shops;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
-    username: srivijay95
-    password: Sownd143@
-    driver-class-name: org.h2.Driver
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/market_local_shops}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: ${HIKARI_MAX_POOL_SIZE:10}
+      minimum-idle: ${HIKARI_MIN_IDLE:5}
+      idle-timeout: 300000
+      max-lifetime: 1800000
+      connection-timeout: 20000
   jpa:
     hibernate:
       ddl-auto: update
@@ -22,9 +24,10 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.H2Dialect
+        dialect: org.hibernate.dialect.PostgreSQLDialect
   flyway:
-    enabled: false
+    enabled: true
+    baseline-on-migrate: true
   servlet:
     multipart:
       max-file-size: 10MB

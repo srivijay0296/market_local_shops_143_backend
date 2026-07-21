@@ -21,9 +21,9 @@ public interface MarketRepository extends JpaRepository<Market, Long> {
 
     @Query(
         value = "SELECT m FROM Market m WHERE " +
-                "(:search IS NULL OR LOWER(m.name) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(m.location) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(m.description) LIKE LOWER(CONCAT('%', :search, '%')))",
+                "(:search IS NULL OR (m.name IS NOT NULL AND LOWER(m.name) LIKE LOWER(CONCAT('%', :search, '%'))) OR (m.location IS NOT NULL AND LOWER(m.location) LIKE LOWER(CONCAT('%', :search, '%'))) OR (m.description IS NOT NULL AND LOWER(m.description) LIKE LOWER(CONCAT('%', :search, '%'))))",
         countQuery = "SELECT COUNT(m) FROM Market m WHERE " +
-                "(:search IS NULL OR LOWER(m.name) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(m.location) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(m.description) LIKE LOWER(CONCAT('%', :search, '%')))"
+                "(:search IS NULL OR (m.name IS NOT NULL AND LOWER(m.name) LIKE LOWER(CONCAT('%', :search, '%'))) OR (m.location IS NOT NULL AND LOWER(m.location) LIKE LOWER(CONCAT('%', :search, '%'))) OR (m.description IS NOT NULL AND LOWER(m.description) LIKE LOWER(CONCAT('%', :search, '%'))))"
     )
     Page<Market> findMarketsWithFilters(
             @Param("search") String search,

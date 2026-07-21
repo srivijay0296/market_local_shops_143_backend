@@ -40,10 +40,10 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@jakarta.validation.Valid @RequestBody AuthRequest request) {
         try {
-            String loginIdentifier = request.getEmail().trim().toLowerCase();
+            String loginIdentifier = request.getEmail().trim();
             
             // Search database for the user either by email or username
-            User user = userRepository.findByEmail(loginIdentifier)
+            User user = userRepository.findByEmail(loginIdentifier.toLowerCase())
                     .or(() -> userRepository.findByUsername(loginIdentifier))
                     .orElseThrow(() -> new RuntimeException("Invalid email/username or password"));
 
@@ -55,9 +55,11 @@ public class AuthController {
             // Generate JWT token
             final UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
             final String jwt = jwtUtils.generateToken(userDetails);
+            final String refreshToken = jwtUtils.generateRefreshToken(userDetails);
 
             return ResponseEntity.ok(new AuthResponse(
                     jwt,
+                    refreshToken,
                     "Bearer",
                     user.getId(),
                     user.getUsername(),
@@ -65,7 +67,7 @@ public class AuthController {
                     user.getRole().name()
             ));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
     }
 
@@ -105,12 +107,50 @@ public class AuthController {
                     .email(email)
                     .password(passwordEncoder.encode(request.getPassword()))
                     .role(userRole)
+                    .isApproved(true)
                     .build();
 
             userRepository.save(user);
-            return ResponseEntity.status(org.springframework.http.HttpStatus.CREATED).body("User registered successfully");
+            return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @PostMapping({"/refresh-token", "/refresh"})
+    public ResponseEntity<?> refreshToken(@RequestBody java.util.Map<String, String> body) {
+        String token = body.get("refreshToken");
+        if (token == null || token.isBlank()) {
+            token = body.get("token");
+        }
+        if (token == null || token.isBlank()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Refresh token is required");
+        }
+
+        try {
+            String username = jwtUtils.extractUsername(token);
+            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            if (jwtUtils.validateToken(token, userDetails) || !jwtUtils.isTokenExpired(token)) {
+                String newJwt = jwtUtils.generateToken(userDetails);
+                String newRefreshToken = jwtUtils.generateRefreshToken(userDetails);
+                User user = userRepository.findByUsername(username)
+                        .or(() -> userRepository.findByEmail(username))
+                        .orElse(null);
+
+                return ResponseEntity.ok(new AuthResponse(
+                        newJwt,
+                        newRefreshToken,
+                        "Bearer",
+                        user != null ? user.getId() : null,
+                        username,
+                        user != null ? user.getEmail() : null,
+                        user != null ? user.getRole().name() : "CUSTOMER"
+                ));
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid or expired refresh token");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid refresh token: " + e.getMessage());
         }
     }
 
@@ -124,6 +164,7 @@ public class AuthController {
 
         String username = authentication.getName();
         User user = userRepository.findByUsername(username)
+                .or(() -> userRepository.findByEmail(username))
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         return ResponseEntity.ok(user);

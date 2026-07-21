@@ -22,8 +22,8 @@ public class ProductService {
     private final ProductMapper productMapper;
 
     @Transactional(readOnly = true)
-    public Page<ProductDTO> findProductsWithFilters(Long shopId, String category, String search, Pageable pageable) {
-        return productRepository.findProductsWithFilters(shopId, category, search, pageable)
+    public Page<ProductDTO> findProductsWithFilters(Long shopId, String category, Boolean isApproved, String search, Pageable pageable) {
+        return productRepository.findProductsWithFilters(shopId, category, isApproved, search, pageable)
                 .map(productMapper::toDto);
     }
 
@@ -58,7 +58,7 @@ public class ProductService {
     @Transactional(readOnly = true)
     public ProductDTO getProductById(Long id) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
         return productMapper.toDto(product);
     }
 
@@ -67,13 +67,22 @@ public class ProductService {
     public ProductDTO createProduct(ProductDTO productDTO) {
         Product product = productMapper.toEntity(productDTO);
         
-        if (product.getShopId() != null) {
-            Shop shop = shopRepository.findById(product.getShopId()).orElse(null);
+        Long shopId = product.getShopId();
+        if (shopId == null && productDTO.getShop() != null) {
+            shopId = productDTO.getShop().getId();
+        }
+        
+        if (shopId != null) {
+            Long targetShopId = shopId;
+            Shop shop = shopRepository.findById(targetShopId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Shop not found with id: " + targetShopId));
             product.setShop(shop);
+            product.setShopId(shop.getId());
         }
-        if (product.getIsApproved() == null) {
-            product.setIsApproved(false);
-        }
+
+        if (product.getStock() == null) product.setStock(10);
+        if (product.getIsApproved() == null) product.setIsApproved(true);
+        if (product.getViewCount() == null) product.setViewCount(0);
         
         Product saved = productRepository.save(product);
         return productMapper.toDto(saved);
@@ -83,7 +92,7 @@ public class ProductService {
     @CacheEvict(value = "products", allEntries = true)
     public ProductDTO updateProduct(Long id, ProductDTO updates) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
                 
         if (updates.getName() != null) product.setName(updates.getName());
         if (updates.getPrice() != null) product.setPrice(updates.getPrice());
@@ -94,9 +103,16 @@ public class ProductService {
         if (updates.getIsApproved() != null) product.setIsApproved(updates.getIsApproved());
         if (updates.getViewCount() != null) product.setViewCount(updates.getViewCount());
         
-        if (updates.getShopId() != null) {
-            Shop shop = shopRepository.findById(updates.getShopId()).orElse(null);
+        Long shopId = updates.getShopId();
+        if (shopId == null && updates.getShop() != null) {
+            shopId = updates.getShop().getId();
+        }
+        if (shopId != null) {
+            Long targetShopId = shopId;
+            Shop shop = shopRepository.findById(targetShopId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Shop not found with id: " + targetShopId));
             product.setShop(shop);
+            product.setShopId(shop.getId());
         }
         
         Product saved = productRepository.save(product);

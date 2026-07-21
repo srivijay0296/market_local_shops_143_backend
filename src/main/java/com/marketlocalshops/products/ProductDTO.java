@@ -15,7 +15,11 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ProductDTO {
     private Long id;
+
+    @jakarta.validation.constraints.NotBlank(message = "Product name is required")
     private String name;
+
+    @jakarta.validation.constraints.NotNull(message = "Product price is required")
     private Double price;
     private String description;
     private String category;
